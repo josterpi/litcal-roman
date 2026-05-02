@@ -1,0 +1,35 @@
+[project]
+name = "litcal-roman"
+version = "0.1.0"
+description = "Roman Catholic liturgical calendar computation"
+readme = "README.md"
+license = { file = "LICENSE"}
+authors = [
+    { name = "Jeremy Osterhouse", email = "josterhouse@gmail.com" }
+]
+keywords = ["catholic", "liturgical", "calendar", "liturgy", "roman"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Religion",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "python-dateutil>=2.9.0.post0",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.6,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.20.2",
+    "pytest>=9.0.3",
+    "ruff>=0.15.12",
+]
