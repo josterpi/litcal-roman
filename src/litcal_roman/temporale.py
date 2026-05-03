@@ -242,6 +242,18 @@ def get_corpus_christi(year: int, config: CalendarConfig) -> date:
     return anchors.easter + timedelta(days=63)
 
 
+def get_holy_family(year: int) -> date:
+    """
+    Holy Family: Sunday within the Christmas Octave (first Sunday after Dec 25),
+    or Dec 30 when Christmas falls on a Sunday (GNLYC §7).
+    """
+    christmas = date(year, 12, 25)
+    if christmas.isoweekday() == 7:
+        return date(year, 12, 30)
+    days_to_sunday = (7 - christmas.isoweekday()) % 7
+    return christmas + timedelta(days=days_to_sunday)
+
+
 # ---------------------------------------------------------------------------
 # Season resolution
 # ---------------------------------------------------------------------------
@@ -582,7 +594,7 @@ def get_temporale_celebration(
     if season == Season.TRIDUUM:
         triduum_offset = (d - anchors.holy_thursday).days
         label = _TRIDUUM_LABELS[triduum_offset]
-        color = LiturgicalColor.WHITE if triduum_offset == 0 else LiturgicalColor.RED
+        color = LiturgicalColor.RED if triduum_offset == 1 else LiturgicalColor.WHITE
         rank  = Rank.TRIDUUM
         return Celebration(name=label, rank=rank, kind=CelebrationKind.TEMPORALE, color=color)
 
@@ -641,6 +653,36 @@ def get_temporale_celebration(
             color = LiturgicalColor.WHITE,
         )
 
+    # --- Sacred Heart (Friday, 68 days after Easter) ---
+    sacred_heart = anchors.easter + timedelta(days=68)
+    if d == sacred_heart:
+        return Celebration(
+            name  = "The Most Sacred Heart of Jesus",
+            rank  = Rank.SOLEMNITY,
+            kind  = CelebrationKind.TEMPORALE,
+            color = LiturgicalColor.WHITE,
+        )
+
+    # --- Immaculate Heart of Mary (Saturday, 69 days after Easter) ---
+    immaculate_heart = anchors.easter + timedelta(days=69)
+    if d == immaculate_heart:
+        return Celebration(
+            name  = "The Immaculate Heart of the Blessed Virgin Mary",
+            rank  = Rank.MEMORIAL,
+            kind  = CelebrationKind.TEMPORALE,
+            color = LiturgicalColor.WHITE,
+        )
+
+    # --- Mary, Mother of the Church (Monday after Pentecost) ---
+    mary_mother = anchors.easter + timedelta(days=50)
+    if d == mary_mother:
+        return Celebration(
+            name  = "The Blessed Virgin Mary, Mother of the Church",
+            rank  = Rank.MEMORIAL,
+            kind  = CelebrationKind.TEMPORALE,
+            color = LiturgicalColor.WHITE,
+        )
+
     # --- Christ the King (always last Sunday of OT = Sunday before Advent) ---
     if season == Season.ORDINARY and week == 34 and weekday == 7:
         return Celebration(
@@ -695,13 +737,29 @@ def get_temporale_celebration(
             color = LiturgicalColor.WHITE,
         )
 
+    # --- Holy Family (Sunday within Christmas octave) ---
+    if d == get_holy_family(d.year):
+        return Celebration(
+            name  = "The Holy Family of Jesus, Mary, and Joseph",
+            rank  = Rank.FEAST,
+            kind  = CelebrationKind.TEMPORALE,
+            color = LiturgicalColor.WHITE,
+        )
+
     # --- Generic Sundays ---
     if weekday == 7:
         label = make_temporale_label(season, week, weekday)
-        # Sundays in OT/Lent/Advent/Christmas rank as solemnities
-        # for the purposes of displacing sanctorale feasts (GNLYC §5).
-        rank = Rank.SOLEMNITY if season != Season.ORDINARY else Rank.FEAST
+        # Advent, Lent, and Easter Sundays rank as solemnities (GNLYC §5).
+        # OT and Christmas Sundays rank as feasts so that Feasts of the Lord
+        # on the same day take precedence via the sanctorale tiebreaker (GNLYC §13c).
+        if season in (Season.ADVENT, Season.LENT, Season.EASTER):
+            rank = Rank.SOLEMNITY
+        else:
+            rank = Rank.FEAST
         color = _sunday_color(season)
+        # Gaudete (Advent 3) and Laetare (Lent 4) may use rose vestments
+        if (season == Season.ADVENT and week == 3) or (season == Season.LENT and week == 4):
+            color = LiturgicalColor.ROSE
         return Celebration(
             name  = label,
             rank  = rank,
