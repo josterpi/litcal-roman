@@ -39,6 +39,7 @@ _DATA_DIR = Path(__file__).parent / "data"
 
 _RANK_MAP: dict[str, Rank] = {
     "solemnity":        Rank.SOLEMNITY,
+    "lord_feast":       Rank.LORD_FEAST,
     "feast":            Rank.FEAST,
     "memorial":         Rank.MEMORIAL,
     "optional_memorial": Rank.OPTIONAL_MEMORIAL,

@@ -19,8 +19,8 @@
 #   it falls during Holy Week or the Easter Octave (GNLYC §60).
 # - The Immaculate Conception (12-08) must be transferred if it falls on
 #   the Second Sunday of Advent.
-# - All Souls (11-02) is listed as a memorial; the orchestrator should
-#   allow three Masses and transfer to 11-03 if 11-02 falls on a Sunday.
+# - All Souls (11-02) is LORD_FEAST rank; it displaces OT Sundays and
+#   requires no transfer when it falls on a Sunday.
 # - Multiple entries on the same date represent distinct celebrations
 #   (each an optional memorial unless noted otherwise).
 
@@ -110,7 +110,7 @@
 
 - date: "02-02"
   name: "The Presentation of the Lord"
-  rank: feast
+  rank: lord_feast
   color: white
 
 - date: "02-03"
@@ -257,6 +257,11 @@
   rank: optional_memorial
   color: red
 
+- date: "04-21"
+  name: "Saint Anselm, Bishop and Doctor of the Church"
+  rank: optional_memorial
+  color: white
+
 - date: "04-23"
   name: "Saint George, Martyr"
   rank: optional_memorial
@@ -331,6 +336,11 @@
 
 - date: "05-13"
   name: "Our Lady of Fatima"
+  rank: optional_memorial
+  color: white
+
+- date: "05-15"
+  name: "Saint Isidore the Farmer"
   rank: optional_memorial
   color: white
 
@@ -428,7 +438,7 @@
 
 - date: "06-13"
   name: "Saint Anthony of Padua, Priest and Doctor of the Church"
-  rank: memorial
+  rank: optional_memorial
   color: white
 
 - date: "06-19"
@@ -513,11 +523,6 @@
   rank: optional_memorial
   color: white
 
-- date: "07-14"
-  name: "Saint Camillus de Lellis, Priest"
-  rank: optional_memorial
-  color: white
-
 - date: "07-15"
   name: "Saint Bonaventure, Bishop and Doctor of the Church"
   rank: memorial
@@ -525,6 +530,11 @@
 
 - date: "07-16"
   name: "Our Lady of Mount Carmel"
+  rank: optional_memorial
+  color: white
+
+- date: "07-18"
+  name: "Saint Camillus de Lellis, Priest"
   rank: optional_memorial
   color: white
 
@@ -749,7 +759,7 @@
 
 - date: "09-14"
   name: "The Exaltation of the Holy Cross"
-  rank: feast
+  rank: lord_feast
   color: red
 
 - date: "09-15"
@@ -789,7 +799,7 @@
 
 - date: "09-23"
   name: "Saint Padre Pio of Pietrelcina, Priest"
-  rank: memorial
+  rank: optional_memorial
   color: white
 
 - date: "09-26"
@@ -938,8 +948,8 @@
 
 - date: "11-02"
   name: "The Commemoration of All the Faithful Departed (All Souls' Day)"
-  rank: memorial
-  color: black
+  rank: lord_feast
+  color: white
 
 - date: "11-03"
   name: "Saint Martin de Porres, Religious"
@@ -953,7 +963,7 @@
 
 - date: "11-09"
   name: "The Dedication of the Lateran Basilica"
-  rank: feast
+  rank: lord_feast
   color: white
 
 - date: "11-10"

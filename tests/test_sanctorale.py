@@ -86,7 +86,7 @@ class TestSpotChecks:
 
     def test_presentation_feast(self, universal):
         entries = get_sanctorale_celebrations(date(2026, 2, 2), universal)
-        assert any(c.rank == Rank.FEAST and "Presentation" in c.name for c in entries)
+        assert any(c.rank == Rank.LORD_FEAST and "Presentation" in c.name for c in entries)
 
     def test_transfiguration_feast(self, universal):
         entries = get_sanctorale_celebrations(date(2026, 8, 6), universal)
@@ -181,7 +181,7 @@ class TestInvariants:
                     f"{d} {c.name}: BVM feast should be white"
 
     def test_rank_values_are_valid(self, universal):
-        valid_ranks = {Rank.SOLEMNITY, Rank.FEAST, Rank.MEMORIAL, Rank.OPTIONAL_MEMORIAL}
+        valid_ranks = {Rank.SOLEMNITY, Rank.LORD_FEAST, Rank.FEAST, Rank.MEMORIAL, Rank.OPTIONAL_MEMORIAL}
         for c in self._all_entries(universal):
             assert c.rank in valid_ranks, f"{c.name}: unexpected rank {c.rank}"
 

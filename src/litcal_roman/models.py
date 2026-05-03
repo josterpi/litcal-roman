@@ -62,7 +62,8 @@ class Rank(IntEnum):
     FERIA                = 10   # ferial weekday
     OPTIONAL_MEMORIAL    = 20   # memoria ad libitum
     MEMORIAL             = 30   # memoria obligatoria
-    FEAST                = 40   # festum
+    FEAST                = 40   # festum (saints' feasts, OT Sundays, Christmas Sundays)
+    LORD_FEAST           = 45   # feasts of the Lord in the sanctorale (GNLYC §59 row 4)
     SOLEMNITY            = 50   # sollemnitas
     # The Triduum days are technically solemnities but outrank everything
     TRIDUUM              = 60
