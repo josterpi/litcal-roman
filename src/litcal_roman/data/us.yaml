@@ -1,0 +1,108 @@
+# United States Proper Calendar (USCCB)
+#
+# Source: US Conference of Catholic Bishops proper calendar, supplementing
+# the General Roman Calendar with saints proper to the United States and
+# rank elevations approved by the USCCB.
+#
+# Schema: same as universal.yaml
+#
+# Notes
+# -----
+# - Entries here are appended to universal.yaml entries for the same date.
+#   Where the US elevates a universal optional memorial to a memorial, the
+#   universal entry remains in the candidate pool; the higher-ranked US entry
+#   wins automatically via the precedence resolver.
+# - The North American Martyrs (10-19) are elevated from optional memorial
+#   to memorial in the US; in the universal calendar Paul of the Cross also
+#   falls on 10-19 and is displaced.
+
+# --- January ---
+
+- date: "01-04"
+  name: "Saint Elizabeth Ann Seton, Religious"
+  rank: memorial
+  color: white
+
+- date: "01-05"
+  name: "Saint John Neumann, Bishop"
+  rank: memorial
+  color: white
+
+- date: "01-06"
+  name: "Blessed André Bessette, Religious"
+  rank: optional_memorial
+  color: white
+
+- date: "01-23"
+  name: "Saint Marianne Cope, Virgin"
+  rank: optional_memorial
+  color: white
+
+# --- March ---
+
+- date: "03-03"
+  name: "Saint Katharine Drexel, Virgin"
+  rank: optional_memorial
+  color: white
+
+# --- May ---
+
+- date: "05-15"
+  name: "Saint Isidore the Farmer"
+  rank: optional_memorial
+  color: white
+
+
+# --- June ---
+
+- date: "06-13"
+  name: "Saint Anthony of Padua, Priest and Doctor of the Church"
+  rank: memorial
+  color: white
+
+# --- July ---
+
+- date: "07-01"
+  name: "Blessed Junípero Serra, Priest"
+  rank: optional_memorial
+  color: white
+
+- date: "07-14"
+  name: "Saint Kateri Tekakwitha, Virgin"
+  rank: memorial
+  color: white
+
+# --- September ---
+
+- date: "09-09"
+  name: "Saint Peter Claver, Priest"
+  rank: memorial
+  color: white
+
+# --- October ---
+
+- date: "10-19"
+  name: "Saints Isaac Jogues and Jean de Brébeuf, Priests, and Companions, Martyrs"
+  rank: memorial
+  color: red
+
+# --- October ---
+
+# Paul of the Cross is Oct 19 in the universal calendar, but Oct 19 is the
+# Memorial of the North American Martyrs in the US; Paul is observed on Oct 20.
+- date: "10-20"
+  name: "Saint Paul of the Cross, Priest"
+  rank: optional_memorial
+  color: white
+
+# --- November ---
+
+- date: "11-13"
+  name: "Saint Frances Xavier Cabrini, Virgin"
+  rank: memorial
+  color: white
+
+- date: "11-18"
+  name: "Rose Philippine Duchesne, Virgin"
+  rank: optional_memorial
+  color: white
