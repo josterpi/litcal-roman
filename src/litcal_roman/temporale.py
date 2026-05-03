@@ -166,9 +166,9 @@ def _first_sunday_of_advent(year: int) -> date:
     """
     christmas = date(year, 12, 25)
     # isoweekday(): Mon=1 … Sun=7
-    # days since last Sunday = christmas.isoweekday() % 7
-    days_since_sunday = christmas.isoweekday() % 7
-    sunday_before_christmas = christmas - timedelta(days=days_since_sunday)
+    # When Christmas is Sunday, % 7 gives 0 — we need 7 to step back a full week.
+    days_to_prev_sunday = christmas.isoweekday() % 7 or 7
+    sunday_before_christmas = christmas - timedelta(days=days_to_prev_sunday)
     return sunday_before_christmas - timedelta(weeks=3)
 
 
@@ -178,16 +178,16 @@ def _baptism_of_the_lord(epiphany: date) -> date:
 
     Special rule (GNLYC §38): when Epiphany falls on January 7 or 8
     (which happens when it is transferred to Sunday in some regions),
-    the Baptism of the Lord is observed on the following Monday.
+    the Baptism of the Lord is observed on the following Monday because
+    there is no remaining Sunday between it and the start of OT.
 
-    For the proper (non-transferred) January 6 Epiphany: Baptism is
-    always the Sunday after January 6, i.e. between January 7–13.
+    For all other cases (proper Jan 6, or transferred Jan 2–6), Baptism
+    is the Sunday after Epiphany, i.e. between January 7–13.
     """
-    # Find the next Sunday after epiphany
-    days_until_sunday = (7 - epiphany.isoweekday()) % 7
-    if days_until_sunday == 0:
-        # Epiphany itself is a Sunday — Baptism moves to Monday
+    if epiphany.day in (7, 8):
+        # No Sunday left in Christmas season — move Baptism to Monday
         return epiphany + timedelta(days=1)
+    days_until_sunday = (7 - epiphany.isoweekday()) % 7 or 7
     return epiphany + timedelta(days=days_until_sunday)
 
 
@@ -276,7 +276,7 @@ def get_season(d: date, config: CalendarConfig) -> tuple[Season, int]:
     # Easter Sunday through Pentecost Sunday (inclusive).
     ascension = get_ascension(d.year, config)  # noqa: F841 — used implicitly via anchors
     if anchors.easter <= d <= anchors.pentecost:
-        week = (d - anchors.easter).days // 7 + 1
+        week = min((d - anchors.easter).days // 7 + 1, 7)
         return Season.EASTER, week
 
     # --- Lent ---
@@ -285,14 +285,15 @@ def get_season(d: date, config: CalendarConfig) -> tuple[Season, int]:
         # Ash Wednesday begins Lent; it falls mid-week.
         # Week 1 of Lent begins on Ash Wednesday regardless of weekday.
         # The Sunday before Ash Wednesday is the last Sunday of OT.
-        week = (d - anchors.ash_wednesday).days // 7 + 1
+        # Palm Sunday begins week 6; Holy Week Mon–Wed are still week 6.
+        week = min((d - anchors.ash_wednesday).days // 7 + 1, 6)
         return Season.LENT, week
 
     # --- Advent ---
     # First Sunday of Advent through Christmas Eve.
     # The current year's Advent opens the *next* liturgical year, so
     # dates in Dec after Advent 1 are in the current year's Advent.
-    if d >= anchors.advent_1:
+    if anchors.advent_1 <= d < date(d.year, 12, 25):
         week = (d - anchors.advent_1).days // 7 + 1
         return Season.ADVENT, week
 
@@ -346,15 +347,13 @@ def _ordinary_time_week(d: date, anchors: YearAnchors, config: CalendarConfig) -
         return (d - ot_start).days // 7 + 1
 
     # Second segment: day after Pentecost → Saturday before Advent 1
-    # Week 34 starts on the Monday of Christ the King week.
-    # Christ the King is the Sunday before Advent 1.
-    christ_the_king      = anchors.advent_1 - timedelta(weeks=1)
-    week_34_monday       = christ_the_king - timedelta(days=christ_the_king.isoweekday() - 1)
-
-    # Walk back from week 34 to find which week d is in.
-    # d must be >= day after Pentecost for us to reach here.
-    weeks_before_34 = (week_34_monday - d).days // 7
-    return 34 - weeks_before_34
+    # Week 34 is anchored on Christ the King Sunday (Advent 1 minus 1 week).
+    # Count back from that Sunday using d's liturgical week-start Sunday.
+    christ_the_king = anchors.advent_1 - timedelta(weeks=1)
+    days_since_sunday = d.isoweekday() % 7   # Sun=0, Mon=1, …, Sat=6
+    week_start_sunday = d - timedelta(days=days_since_sunday)
+    weeks_before_ctk  = (christ_the_king - week_start_sunday).days // 7
+    return 34 - weeks_before_ctk
 
 
 # ---------------------------------------------------------------------------
@@ -511,14 +510,14 @@ def make_temporale_label(season: Season, week: int, weekday: int) -> str:
             return f"{day_name} of the {ordinal} Week of Christmas"
 
         case Season.LENT:
-            if week == 1 and weekday in (3, 4, 5, 6):
-                # Ash Wednesday week: special labels
+            if week == 1 and weekday in (4, 5, 6):
+                # Ash Wednesday week: special labels (Ash Wed itself = ISO 3, handled separately)
                 match weekday:
-                    case 3:
-                        return "Thursday after Ash Wednesday"
                     case 4:
-                        return "Friday after Ash Wednesday"
+                        return "Thursday after Ash Wednesday"
                     case 5:
+                        return "Friday after Ash Wednesday"
+                    case 6:
                         return "Saturday after Ash Wednesday"
             return f"{day_name} of the {ordinal} Week of Lent"
 
@@ -751,11 +750,10 @@ def compute_temporale(d: date, config: CalendarConfig) -> dict:
     season, week  = get_season(d, config)
     weekday       = d.isoweekday()
     psalter_week  = get_psalter_week(season, week)
-    label         = make_temporale_label(season, week, weekday) \
-                    if season != Season.TRIDUUM or week == 0 \
-                    else _TRIDUUM_LABELS.get(
-                        (d - get_anchors(d.year).holy_thursday).days, ""
-                    )
+    if season == Season.TRIDUUM:
+        label = _TRIDUUM_LABELS.get((d - get_anchors(d.year).holy_thursday).days, "")
+    else:
+        label = make_temporale_label(season, week, weekday)
     celebration   = get_temporale_celebration(d, season, week, weekday, config)
     scripture     = get_scripture_cycle(d)
     sunday_cycle  = get_sunday_cycle(d)

@@ -198,13 +198,13 @@ class TestKnownDates:
         assert result["label"] == "Saturday after Ash Wednesday"
 
     def test_1st_sunday_of_lent_2026(self, us_config):
-        # First Sunday of Lent is the Sunday of the week AFTER Ash Wednesday
+        # First Sunday of Lent falls within week 1 (Ash Wednesday starts week 1)
         d = date(2026, 2, 22)
         result = compute_temporale(d, us_config)
         assert result["season"] == Season.LENT
-        assert result["week"] == 2  # Ash Wednesday starts week 1; first Sunday is week 2
+        assert result["week"] == 1
         assert result["weekday"] == 7
-        assert result["label"] == "2nd Sunday of Lent"
+        assert result["label"] == "1st Sunday of Lent"
 
     def test_palm_sunday_2026(self, us_config):
         d = date(2026, 3, 29)
@@ -432,14 +432,14 @@ class TestInvariants:
         assert triduum_days[2] == anchors.holy_saturday
 
     @pytest.mark.parametrize("year", [2024, 2025, 2026, 2027])
-    def test_easter_is_exactly_49_days(self, year, us_config):
-        # Easter Sunday through Pentecost Sunday = 7 weeks = 49 days
+    def test_easter_is_exactly_50_days(self, year, us_config):
+        # Easter Sunday through Pentecost Sunday inclusive = 50 days (7 weeks + 1)
         easter_days = [
             d for d in _all_days_in_year(year)
             if get_season(d, us_config)[0] == Season.EASTER
         ]
-        assert len(easter_days) == 49, \
-            f"{year}: Easter season has {len(easter_days)} days, expected 49"
+        assert len(easter_days) == 50, \
+            f"{year}: Easter season has {len(easter_days)} days, expected 50"
 
     @pytest.mark.parametrize("year", [2024, 2025, 2026, 2027])
     def test_no_gaps_in_season_coverage(self, year, us_config):
@@ -514,9 +514,10 @@ class TestTransfers:
         anchors = get_anchors(year)
         proper_thursday = anchors.ascension_proper
         result = compute_temporale(proper_thursday, us_config)
-        # In US config, the Thursday proper date is an ordinary Easter feria
+        # In US config, the Thursday proper date is an ordinary Easter feria —
+        # compute_temporale returns None for ferias (no temporale celebration).
         assert result["season"] == Season.EASTER
-        assert result["celebration"].rank < Rank.SOLEMNITY
+        assert result["celebration"] is None or result["celebration"].rank < Rank.SOLEMNITY
 
     @pytest.mark.parametrize("year", [2024, 2025, 2026, 2027])
     def test_epiphany_january_6_universal(self, year, universal_config):
@@ -694,7 +695,7 @@ class TestLabels:
                "Friday of the 3rd Week of Advent"
 
     def test_thursday_after_ash_wednesday(self):
-        assert make_temporale_label(Season.LENT, 1, 3) == \
+        assert make_temporale_label(Season.LENT, 1, 4) == \
                "Thursday after Ash Wednesday"
 
 
