@@ -8,3 +8,6 @@ wheels/
 
 # Virtual environments
 .venv
+
+# romcal fixture CSVs — download locally but do not commit (see test_romcal_fixtures.py)
+tests/fixtures/
