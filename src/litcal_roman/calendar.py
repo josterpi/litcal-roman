@@ -13,6 +13,7 @@ get_liturgical_day(d, config) -> LiturgicalDay
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date, timedelta
 from functools import lru_cache
 from typing import Optional
@@ -78,10 +79,6 @@ def _build_transfer_map(year: int) -> dict[date, date]:
     if ic_effective != ic_proper:
         transfers[ic_proper] = ic_effective
 
-    as_proper = date(year, 11, 2)
-    if as_proper.isoweekday() == 7:
-        transfers[as_proper] = date(year, 11, 3)
-
     return transfers
 
 
@@ -108,7 +105,7 @@ def _get_effective_sanctorale(d: date, config: CalendarConfig) -> list[Celebrati
 
 
 # ---------------------------------------------------------------------------
-# Feria color
+# Color helpers
 # ---------------------------------------------------------------------------
 
 def _feria_color(season: Season) -> LiturgicalColor:
@@ -119,6 +116,24 @@ def _feria_color(season: Season) -> LiturgicalColor:
             return LiturgicalColor.WHITE
         case _:
             return LiturgicalColor.GREEN
+
+
+def _resolve_color(winner: Celebration, season: Season) -> LiturgicalColor:
+    """
+    Return the effective vestment colour for the winning celebration.
+
+    Feasts and above always keep their proper colour.  For lower ranks,
+    the season overrides the celebration's stored colour per GIRM §346:
+    - Optional memorials take the season colour (the Mass follows the feria).
+    - Obligatory memorials use Violet during Lent and Advent.
+    """
+    if winner.rank >= Rank.FEAST:
+        return winner.color
+    if winner.rank == Rank.OPTIONAL_MEMORIAL:
+        return _feria_color(season)
+    if winner.rank == Rank.MEMORIAL and season == Season.LENT:
+        return LiturgicalColor.VIOLET
+    return winner.color
 
 
 # ---------------------------------------------------------------------------
@@ -142,13 +157,16 @@ def get_liturgical_day(d: date, config: CalendarConfig) -> LiturgicalDay:
     label: str                       = t["label"]
     temp_cel: Optional[Celebration]  = t["celebration"]
 
-    # Easter Octave (season=Easter, week=1): sanctorale is entirely suppressed.
-    # All eight days carry SOLEMNITY-rank-or-higher temporale celebrations and
-    # the Octave is treated as a unified celebration (GNLYC §24).
-    if season == Season.EASTER and week == 1:
-        sanctorale: list[Celebration] = []
-    else:
-        sanctorale = _get_effective_sanctorale(d, config)
+    # Sanctorale is suppressed on Holy Week Mon–Wed and during the Easter Octave
+    # (GNLYC §60c, §24).
+    anchors = get_anchors(d.year)
+    holy_week_start = anchors.palm_sunday + timedelta(days=1)
+    holy_week_end   = anchors.holy_thursday - timedelta(days=1)
+    in_suppressed = (
+        (season == Season.EASTER and week == 1)
+        or (holy_week_start <= d <= holy_week_end)
+    )
+    sanctorale: list[Celebration] = [] if in_suppressed else _get_effective_sanctorale(d, config)
 
     # Build candidate list: temporale celebration (or feria baseline) + sanctorale
     if temp_cel is not None:
@@ -162,10 +180,25 @@ def get_liturgical_day(d: date, config: CalendarConfig) -> LiturgicalDay:
         )
         candidates = [feria, *sanctorale]
 
-    # Precedence: sort descending by rank; first entry wins (stable for ties)
-    sorted_candidates = sorted(candidates, key=lambda c: c.rank, reverse=True)
+    # Precedence: sort descending by rank.
+    # Tiebreaker at MEMORIAL rank: fixed sanctorale memorials beat moveable
+    # temporale ones (e.g. Irenaeus beats Immaculate Heart when they coincide).
+    # At FEAST and above, the stable insertion order prevails (temporale first).
+    def _rank_key(c: Celebration) -> tuple[int, int]:
+        if c.rank == Rank.MEMORIAL:
+            priority = 0 if c.kind == CelebrationKind.TEMPORALE else 1
+        else:
+            priority = 0
+        return (c.rank, priority)
+
+    sorted_candidates = sorted(candidates, key=_rank_key, reverse=True)
     winner = sorted_candidates[0]
     displaced = tuple(sorted_candidates[1:])
+
+    # Apply season-based colour overrides (GIRM §346)
+    effective_color = _resolve_color(winner, season)
+    if effective_color != winner.color:
+        winner = replace(winner, color=effective_color)
 
     return LiturgicalDay(
         date=d,

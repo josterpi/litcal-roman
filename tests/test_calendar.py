@@ -236,25 +236,28 @@ class TestImmaculateConceptionTransfer:
 # ---------------------------------------------------------------------------
 
 class TestAllSoulsTransfer:
-    def test_all_souls_absent_on_sunday(self):
-        ld = get_liturgical_day(date(2025, 11, 2), _UNIVERSAL)
-        names = [c.name for c in ld.all_celebrations]
-        assert not any("All Souls" in n or "Faithful Departed" in n for n in names)
+    # All Souls is LORD_FEAST (GNLYC row 4) and displaces OT Sundays.
+    # No transfer to Nov 3 is required; All Souls wins on Nov 2 itself.
 
-    def test_ot_sunday_on_nov_2(self):
+    def test_all_souls_wins_on_nov_2_even_when_sunday(self):
+        # 2025-11-02 is a Sunday; All Souls (LORD_FEAST) beats OT Sunday (FEAST)
+        ld = get_liturgical_day(date(2025, 11, 2), _UNIVERSAL)
+        assert "Faithful Departed" in ld.celebration.name
+
+    def test_all_souls_rank(self):
+        ld = get_liturgical_day(date(2025, 11, 2), _UNIVERSAL)
+        assert ld.celebration.rank == Rank.LORD_FEAST
+
+    def test_ot_sunday_displaced_on_nov_2(self):
         ld = get_liturgical_day(date(2025, 11, 2), _UNIVERSAL)
         assert ld.weekday == 7
         assert ld.season == Season.ORDINARY
+        assert any("Sunday" in c.name for c in ld.displaced)
 
-    def test_all_souls_present_on_transfer_date(self):
+    def test_nov_3_is_normal_weekday(self):
+        # Nov 3 is not a transfer target — Martin de Porres (Opt. Mem.) or feria
         ld = get_liturgical_day(date(2025, 11, 3), _UNIVERSAL)
-        names = [c.name for c in ld.all_celebrations]
-        assert any("Faithful Departed" in n for n in names)
-
-    def test_all_souls_wins_on_transfer_date(self):
-        ld = get_liturgical_day(date(2025, 11, 3), _UNIVERSAL)
-        assert "Faithful Departed" in ld.celebration.name
-        assert ld.celebration.rank == Rank.MEMORIAL
+        assert "Faithful Departed" not in ld.celebration.name
 
 
 # ---------------------------------------------------------------------------
