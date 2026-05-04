@@ -4,7 +4,7 @@ Roman Catholic liturgical calendar computation for Python.
 
 Given a date and a calendar configuration, `litcal-roman` returns the fully resolved liturgical day: the winning celebration after precedence resolution, any displaced celebrations, the liturgical season and week, vestment color, psalter week, and lectionary cycles.
 
-Precedence rules follow the [General Norms for the Liturgical Year and the Calendar](https://www.liturgyoffice.org.uk/Resources/Rites/GNLYC.pdf) (GNLYC), with transfer rules applied per region.
+Precedence rules follow the [General Norms for the Liturgical Year and the Calendar](https://www.catholicculture.org/culture/library/view.cfm?id=10842)) (GNLYC), with transfer rules applied per region.
 
 ## Installation
 
