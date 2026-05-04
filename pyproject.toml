@@ -33,4 +33,12 @@ dev = [
     "mypy>=1.20.2",
     "pytest>=9.0.3",
     "ruff>=0.15.12",
+    "types-python-dateutil>=2.9.0.20260408",
+    "types-pyyaml>=6.0.12.20260408",
 ]
+
+[tool.ruff.lint]
+ignore = ["E701"]
+
+[tool.mypy]
+strict = true

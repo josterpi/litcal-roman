@@ -25,7 +25,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, timedelta
 from functools import lru_cache
-from typing import Optional
+from typing import Any, Optional
 
 from dateutil.easter import easter as _dateutil_easter
 
@@ -270,13 +270,8 @@ def get_season(d: date, config: CalendarConfig) -> tuple[Season, int]:
 
     The Triduum returns week=0 (it has no week in the seasonal sense).
     """
-    # We may need anchors for both this year and last year, since a
-    # January date might still be in the previous year's Advent or Christmas.
-    anchors      = get_anchors(d.year)
-    prev_anchors = get_anchors(d.year - 1)
-
-    baptism  = get_baptism(d.year, config)
-    epiphany = get_epiphany(d.year, config)
+    anchors = get_anchors(d.year)
+    baptism = get_baptism(d.year, config)
 
     # --- Triduum ---
     # Holy Thursday evening through Holy Saturday.
@@ -319,7 +314,6 @@ def get_season(d: date, config: CalendarConfig) -> tuple[Season, int]:
     christmas_this_year = date(d.year, 12, 25)
     christmas_prev_year = date(d.year - 1, 12, 25)
     baptism_this_year   = baptism
-    baptism_prev_year   = get_baptism(d.year - 1, config)
 
     if d >= christmas_this_year:
         # Dec 25 onward (already ruled out Advent above)
@@ -787,7 +781,7 @@ def _sunday_color(season: Season) -> LiturgicalColor:
 # Primary public interface
 # ---------------------------------------------------------------------------
 
-def compute_temporale(d: date, config: CalendarConfig) -> dict:
+def compute_temporale(d: date, config: CalendarConfig) -> dict[str, Any]:
     """
     Compute the raw temporale data for *d* under *config*.
 

@@ -50,8 +50,6 @@ from litcal_roman.models import (
 )
 from litcal_roman.temporale import (
     _first_sunday_of_advent,
-    _liturgical_year,
-    _ordinary_time_week,
     compute_temporale,
     get_anchors,
     get_ascension,
@@ -62,7 +60,6 @@ from litcal_roman.temporale import (
     get_scripture_cycle,
     get_season,
     get_sunday_cycle,
-    get_temporale_celebration,
     make_temporale_label,
 )
 

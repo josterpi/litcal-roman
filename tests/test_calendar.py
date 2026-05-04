@@ -19,13 +19,11 @@ Test years used:
 
 from datetime import date
 
-import pytest
 
 from litcal_roman.calendar import get_liturgical_day
 from litcal_roman.models import (
     CalendarConfig,
     CelebrationKind,
-    LiturgicalColor,
     Rank,
     Season,
 )
