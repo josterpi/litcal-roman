@@ -350,7 +350,14 @@ def _ordinary_time_week(d: date, anchors: YearAnchors, config: CalendarConfig) -
     # First segment: Monday after Baptism of the Lord → Tuesday before Ash Wednesday
     ot_start = baptism + timedelta(days=1)
     if ot_start <= d < anchors.ash_wednesday:
-        return (d - ot_start).days // 7 + 1
+        # Anchor to the Sunday of the week OT starts in, not ot_start itself.
+        # Baptism is always Sunday or Monday (transferred), so ot_start is Monday
+        # or Tuesday. The liturgical week runs Sun→Sat, so without this correction
+        # the week boundary would fall mid-week and Sundays would get the wrong
+        # week number (one too low).
+        days_since_sunday = ot_start.isoweekday() % 7  # Sun=0, Mon=1, …, Sat=6
+        week_anchor = ot_start - timedelta(days=days_since_sunday)
+        return (d - week_anchor).days // 7 + 1
 
     # Second segment: day after Pentecost → Saturday before Advent 1
     # Week 34 is anchored on Christ the King Sunday (Advent 1 minus 1 week).

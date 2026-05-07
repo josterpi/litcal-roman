@@ -463,10 +463,13 @@ class TestInvariants:
                 seg1_weeks.add(week)
             d += timedelta(days=1)
 
-        # Segment 1 should be a contiguous range starting at 1
+        # Segment 1 should be contiguous. When Baptism falls on Monday the
+        # first OT week (Tue–Sat) has no Monday sample, so the minimum may be 2.
         if seg1_weeks:
-            assert seg1_weeks == set(range(1, max(seg1_weeks) + 1)), \
+            assert seg1_weeks == set(range(min(seg1_weeks), max(seg1_weeks) + 1)), \
                 f"{year} segment 1 OT weeks not contiguous: {sorted(seg1_weeks)}"
+            assert min(seg1_weeks) in (1, 2), \
+                f"{year} segment 1 OT weeks start unexpectedly at {min(seg1_weeks)}"
 
         # Segment 2: day after Pentecost → day before Advent
         seg2_weeks = set()
