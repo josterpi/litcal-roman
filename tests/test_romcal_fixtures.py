@@ -5,7 +5,7 @@ tests/test_romcal_fixtures.py
 Cross-validate get_liturgical_day against romcal.net CSV exports.
 
 Fixtures are NOT committed to the repository.  To run these tests:
-  1. Go to romcal.net → Calendar → United States → CSV
+  1. Go to romcal.net → Calendar → CSV
   2. Download each year and save as tests/fixtures/<year>.csv
   3. Run: pytest tests/test_romcal_fixtures.py
 
@@ -25,6 +25,7 @@ _US = CalendarConfig.us()
 
 _FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
+TEST_YEARS = [2024, 2025, 2026, 2027]
 
 def _parse_date(s: str) -> date:
     try:
@@ -71,7 +72,7 @@ def _load_rows(year: int) -> list[dict]:
         return list(csv.DictReader(fh))
 
 
-@pytest.mark.parametrize("year", [2024, 2025, 2026, 2027])
+@pytest.mark.parametrize("year", TEST_YEARS)
 def test_rank_against_romcal(year):
     rows = _load_rows(year)
     if not rows:
@@ -111,7 +112,7 @@ def test_rank_against_romcal(year):
     assert not failures, f"{len(failures)} rank failures in {year}:\n" + "\n".join(failures)
 
 
-@pytest.mark.parametrize("year", [2024, 2025, 2026, 2027])
+@pytest.mark.parametrize("year", TEST_YEARS)
 def test_color_against_romcal(year):
     rows = _load_rows(year)
     if not rows:
